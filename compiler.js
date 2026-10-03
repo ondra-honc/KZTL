@@ -185,3 +185,20 @@ export function extractTag(tag) {
 
     return [realTag, attributes];
 }
+
+function transpileAttributes(attrString) {
+    if (!attrString.trim()) return "";
+    
+    const regex = /([a-zA-Z0-9_-]+)(?:=\s*"([^"]*)")?/g;
+    const result = attrString.replace(regex, (FullMatch, key, value) => {
+        if (ATTR_MAP.get(key) == undefined) throw new Error(`${key} is not included in ATTR_MAP`);
+        
+        const mappedKey =  ATTR_MAP.get(key);
+        if (value == undefined) return `${mappedKey}`
+        return `${mappedKey}="${value}"`
+    })
+
+    return result;
+}
+
+console.log(transpileAttributes('tridakazdy'))
