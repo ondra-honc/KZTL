@@ -186,7 +186,7 @@ export function extractTag(tag) {
     return [realTag, attributes];
 }
 
-function transpileAttributes(attrString) {
+export function transpileAttributes(attrString) {
     if (!attrString.trim()) return "";
     
     const regex = /([a-zA-Z0-9_-]+)(?:=\s*"([^"]*)")?/g;
@@ -200,5 +200,3 @@ function transpileAttributes(attrString) {
 
     return result;
 }
-
-console.log(transpileAttributes('tridakazdy'))
