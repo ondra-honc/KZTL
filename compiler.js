@@ -97,6 +97,68 @@ const TAG_MAP = new Map([
     ["matikakazdy", "math"]
 ]);
 
+const ATTR_MAP = new Map([
+    // Global Attributes
+    ["identifikatorkazdy", "id"],
+    ["tridakazdy", "class"],
+    ["stylkazdy", "style"],
+    ["titulekkazdy", "title"],
+    ["jazykkazdy", "lang"],
+    ["skrytykazda", "hidden"],
+    ["poradikazdy", "tabindex"],
+    ["tahatelnykazda", "draggable"],
+
+    // Links & Navigation
+    ["odkazkazdy", "href"],
+    ["cilkazdy", "target"],
+    ["vztahkazdy", "rel"],
+    ["stahnoutkazdu", "download"],
+
+    // Embedded Content & Media
+    ["zdrojkazdy", "src"],
+    ["alternativnikazdy", "alt"],
+    ["sirkakazdy", "width"],
+    ["vyskakazdy", "height"],
+    ["nahledkazdy", "poster"],
+    ["ovladanikazdy", "controls"],
+    ["samospustenikazdy", "autoplay"],
+    ["smyckakazdy", "loop"],
+    ["ztisenokazdo", "muted"],
+    ["sadaobrazkukazdy", "srcset"],
+    ["velikostikazdy", "sizes"],
+
+    // Forms & Inputs
+    ["typkazdy", "type"],
+    ["hodnotakazdy", "value"],
+    ["jmenokazdy", "name"],
+    ["napovedakazdy", "placeholder"],
+    ["zakazanokazdo", "disabled"],
+    ["zaskrtnutokazdo", "checked"],
+    ["povinnekazdo", "required"],
+    ["pouzeproctenikazdo", "readonly"],
+    ["akcekazdy", "action"],
+    ["metodakazdy", "method"],
+    ["prokazdu", "for"],
+    ["minimumkazdy", "min"],
+    ["maximumkazdy", "max"],
+    ["krokkazdy", "step"],
+    ["vzorkazdy", "pattern"],
+    ["vicenasobnykazda", "multiple"],
+    ["radkykazdy", "rows"],
+    ["sloupcekazdy", "cols"],
+    ["autofokuskazdy", "autofocus"],
+    ["autodoplnenikazdy", "autocomplete"],
+
+    // Metadata
+    ["kodovanikazdy", "charset"],
+    ["obsahkazdy", "content"],
+    ["httpequivkazdy", "http-equiv"],
+    ["mediakazda", "media"],
+
+    // Interactive & Dialog
+    ["otevrenokazdo", "open"]
+]);
+
 export function clasifyLine(line) {
     const trimmed = line.trim();
 
