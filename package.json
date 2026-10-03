@@ -1,6 +1,6 @@
 {
   "name": "@ondra_honc/kztl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "bin": {
     "kztl": "./transpile.js"
