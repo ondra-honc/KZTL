@@ -1,1 +1,6 @@
 Kazda Tag Language je hlavní nástroj pro psaní struktury webu pro framework: "Prumka Styl"
+
+Pro stáhnutí spusťte:
+```bash
+npm install -g @ondra_honc/kztl
+```
