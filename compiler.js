@@ -185,7 +185,7 @@ export function extractTag(tag) {
     }
 
     if (content.endsWith('/')) {
-        content = content.slice(-1);
+        content = content.substring(0,content.length - 1).trim();
     }
 
     const firstSpaceIndex = content.indexOf(" ");
