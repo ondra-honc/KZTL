@@ -184,6 +184,10 @@ export function extractTag(tag) {
         content = content.slice(1);
     }
 
+    if (content.endsWith('/')) {
+        content = content.slice(-1);
+    }
+
     const firstSpaceIndex = content.indexOf(" ");
 
     if (firstSpaceIndex === -1) {
