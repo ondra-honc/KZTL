@@ -159,6 +159,16 @@ export const ATTR_MAP = new Map([
     ["otevrenokazdo", "open"]
 ]);
 
+const VOID_TAGS = new Set([
+    "base",
+    "link",
+    "br",
+    "img",
+    "source",
+    "input",
+    "meta"
+]);
+
 export function clasifyLine(line) {
     const trimmed = line.trim();
 
