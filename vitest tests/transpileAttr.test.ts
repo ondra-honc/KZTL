@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { transpileAttributes, TAG_MAP, extractTag } from '../compiler';
+import { transpileAttributes, TAG_MAP, extractTag } from '../compilerBase';
 
 describe('ATTR_MAP Transpilation', () => {
   it('přeloží základní atributy s hodnotou', () => {

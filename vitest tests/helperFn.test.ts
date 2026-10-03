@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clasifyLine, extractTag, lineType } from '../compiler';
+import { clasifyLine, extractTag, lineType } from '../compilerBase';
 
 describe('clasifyLine', () => {
     it('identifies opening tags', () => {

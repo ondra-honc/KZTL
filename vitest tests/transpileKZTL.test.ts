@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transpileKZTL } from '../compiler'; // Upravte cestu ke svému souboru
+import { transpileKZTL } from '../compilerBase'; 
 
 describe('transpileKZTL - Úspěšné překlady', () => {
     it('přeloží základní strukturu bez atributů', () => {
