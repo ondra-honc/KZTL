@@ -1,7 +1,10 @@
 {
-  "name": "my-project",
+  "name": "KZTL",
   "version": "1.0.0",
   "type": "module",
+  "bin": {
+    "kztl": "./transpile.js"
+  },
   "scripts": {
     "test": "vitest"
   },
