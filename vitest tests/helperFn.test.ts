@@ -29,6 +29,10 @@ describe('extractTag', () => {
         expect(extractTag('</div>')).toEqual(['div', '']);
     });
 
+    it('trailing slash inside tag', () => {
+        expect(extractTag('<img/>')).toEqual(['img', '']);
+    });
+
     it('extracts tag and attributes string', () => {
         expect(extractTag('<div id="main" class="container">'))
             .toEqual(['div', 'id="main" class="container"']);
