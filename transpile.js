@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { transpileKZTL } from './compilerBase';
+import { transpileKZTL } from './compilerBase.js';
 
 function resolveErrors(text) {
     console.error(text);
