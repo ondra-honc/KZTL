@@ -214,3 +214,63 @@ export function transpileAttributes(attrString) {
 
     return result;
 }
+
+function transpileKZTL(sourceCode) {
+    const lines = sourceCode.split('\n');
+    const output = [];
+    const stack = []; // Stores { tag: string, htmlTag: string, line: number }
+
+    for (let i = 0; i < lines.length; i++) {
+        const lineNum = i + 1;
+        const line = lines[i];
+        
+        switch (clasifyLine(line)) {
+            case lineType.OPENINGTAG: {
+                const rawTag = extractTag(line);
+                const htmlTag = TAG_MAP.get(rawTag[0]);
+                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
+                
+                const attr = transpileAttributes(rawTag[1]);
+
+                attr != "" ? output.push(`<${htmlTag} ${attr}>`) : output.push(`<${htmlTag}${attr}>`);
+                 
+                if (!VOID_TAGS.has(htmlTag)) {
+                    stack.push({ tag: rawTag[0], htmlTag, line: lineNum});
+                }
+                
+                break;
+            }
+            
+            case lineType.CLOSINGTAG: {
+                const rawTag = extractTag(line);
+                if (stack.length == 0) throw new Error(`Opening tag for: ${rawTag[0]} on line ${lineNum} wasn't found`); 
+                
+                const htmlTag = TAG_MAP.get(rawTag[0]);
+                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
+                
+                const lastOpened = stack.pop();
+
+                if (lastOpened.htmlTag != htmlTag) throw new Error(`Expected tag: ${lastOpened.htmlTag} on line ${lastOpened.line} not found instead found tag: ${htmlTag}`);
+
+                output.push(`</${htmlTag}>`);
+
+                break;
+            }
+
+            case lineType.CONTENT: {
+                output.push(line);
+                break;
+            }
+
+            default:
+                throw new Error(`Line: ${line} is not a valid line type`);
+        }
+    }
+
+    if (stack.length > 0) {
+        const mapped = stack.map((e) => `tag: ${e.tag} on line: ${e.line}`).join('\n');
+        throw new Error(`Found errors: ${mapped}`);
+    }
+
+    return output.join('\n');
+}
