@@ -1,5 +1,5 @@
 {
-  "name": "kztl",
+  "name": "@ondra_honc/kztl",
   "version": "1.0.0",
   "type": "module",
   "bin": {
