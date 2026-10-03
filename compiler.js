@@ -268,8 +268,8 @@ function transpileKZTL(sourceCode) {
     }
 
     if (stack.length > 0) {
-        const mapped = stack.map((e) => `tag: ${e.tag} on line: ${e.line}`).join('\n');
-        throw new Error(`Found errors: ${mapped}`);
+        const mapped = stack.map((e) => `- tag: ${e.tag} on line: ${e.line}`).join('\n');
+        throw new Error(`Found unclosed tags: \n${mapped}`);
     }
 
     return output.join('\n');
