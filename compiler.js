@@ -13,7 +13,7 @@ export function clasifyLine(line) {
 }
 
 export function extractTag(tag) {
-    const content = tag.trim().slice(1, -1).trim();
+    let content = tag.trim().slice(1, -1).trim();
     
     if (content.startsWith('/')) {
         content = content.slice(1);
