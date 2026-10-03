@@ -258,7 +258,7 @@ export function transpileKZTL(sourceCode) {
             }
 
             case lineType.CONTENT: {
-                output.push(line);
+                output.push(line.trim());
                 break;
             }
 
