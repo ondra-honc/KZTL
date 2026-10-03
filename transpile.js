@@ -10,28 +10,28 @@ function resolveErrors(text) {
 export function runTranspiler() {
     const inputFile = process.argv[2];
     
-    if (!inputFile) resolveErrors("Please enter a .kztl file as a second argument");
+    if (!inputFile) resolveErrors("Prosím zadejte .kztl soubor jako druhý argument");
     
     let outputFile;
     const resolvedInputPath = path.resolve(inputFile);
     const parseFile = path.parse(resolvedInputPath);
 
-    if (!fs.existsSync(resolvedInputPath)) resolveErrors(`Source file at ${resolvedInputPath} does not exist`);
+    if (!fs.existsSync(resolvedInputPath)) resolveErrors(`Zdrojový soubor na cestě ${resolvedInputPath} neexistuje`);
 
     if (parseFile.ext === ".kztl") {
         outputFile = path.join(parseFile.dir, `${parseFile.name}.html`);
-    } else resolveErrors("Please transpile a .kztl file")
+    } else resolveErrors("Soubor ke kompilaci musí mít příponu .kztl")
 
     try {
-        console.log(`[KZTL]  Root file: ${resolvedInputPath}`);
+        console.log(`[KZTL]  Hlavní soubor: ${resolvedInputPath}`);
 
         const inputCode = fs.readFileSync(resolvedInputPath, 'utf8');
         const output = transpileKZTL(inputCode);
     
         fs.writeFileSync(outputFile, output);
-        console.log(`Successfully transpiled to ${outputFile}`);
+        console.log(`Úspěšně zkompilováno do: ${outputFile}`);
     } catch (err) {
-        resolveErrors(`An unhandled exception happened: ${err.message}`);
+        resolveErrors(`Došlo k neočekávané chybě: ${err.message}`);
     }
 }
 
