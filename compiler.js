@@ -215,7 +215,7 @@ export function transpileAttributes(attrString) {
     return result;
 }
 
-function transpileKZTL(sourceCode) {
+export function transpileKZTL(sourceCode) {
     const lines = sourceCode.split('\n');
     const output = [];
     const stack = []; // Stores { tag: string, htmlTag: string, line: number }
