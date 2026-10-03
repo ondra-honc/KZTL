@@ -36,7 +36,9 @@ export function runTranspiler() {
 }
 
 // --- TEST SETUP ---
-import { fileURLToPath } from 'node:url';
+/*import { fileURLToPath } from 'node:url';
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     runTranspiler();
-}
+}*/
+
+runTranspiler();
