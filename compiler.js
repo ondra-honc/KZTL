@@ -1,10 +1,10 @@
-const lineType = Object.freeze({
+export const lineType = Object.freeze({
     OPENINGTAG: 0,
     CLOSINGTAG: 1,
     CONTENT: 2
 });
 
-function clasifyLine(line) {
+export function clasifyLine(line) {
     const trimmed = line.trim();
 
     if (trimmed.startsWith('</') && trimmed.endsWith('>')) return lineType.CLOSINGTAG;
@@ -12,7 +12,7 @@ function clasifyLine(line) {
     return lineType.CONTENT;
 }
 
-function extractTag(tag) {
+export function extractTag(tag) {
     const content = tag.trim().slice(1, -1).trim();
     
     if (content.startsWith('/')) {
