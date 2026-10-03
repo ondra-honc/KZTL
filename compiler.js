@@ -4,7 +4,7 @@ export const lineType = Object.freeze({
     CONTENT: 2
 });
 
-const TAG_MAP = new Map([
+export const TAG_MAP = new Map([
     // Document Metadata
     ["hlavnikazdic", "html"],
     ["head", "head"],
@@ -97,7 +97,7 @@ const TAG_MAP = new Map([
     ["matikakazdy", "math"]
 ]);
 
-const ATTR_MAP = new Map([
+export const ATTR_MAP = new Map([
     // Global Attributes
     ["identifikatorkazdy", "id"],
     ["tridakazdy", "class"],
