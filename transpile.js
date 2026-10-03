@@ -7,7 +7,7 @@ function resolveErrors(text) {
     process.exit(1);
 }
 
-function runTranspiler() {
+export function runTranspiler() {
     const inputFile = process.argv[2];
     
     if (!inputFile) resolveErrors("Please enter a .kztl file as a second argument");
@@ -35,4 +35,8 @@ function runTranspiler() {
     }
 }
 
-runTranspiler();
+// --- TEST SETUP ---
+import { fileURLToPath } from 'node:url';
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    runTranspiler();
+}
