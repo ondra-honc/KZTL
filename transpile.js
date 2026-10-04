@@ -10,38 +10,38 @@ function resolveErrors(text) {
     process.exit(1);
 }
 
-export function runTranspiler() {
-    const inputFile = process.argv[2];
-    
-    if (!inputFile) resolveErrors("Prosím zadejte .kztl soubor jako druhý argument");
-    
+export function compileFile(inputFile) {
     let outputFile;
     const resolvedInputPath = path.resolve(inputFile);
     const parseFile = path.parse(resolvedInputPath);
 
-    if (!fs.existsSync(resolvedInputPath)) resolveErrors(`Zdrojový soubor na cestě ${resolvedInputPath} neexistuje`);
+    if (!fs.existsSync(resolvedInputPath)) throw new Error(`Zdrojový soubor na cestě ${resolvedInputPath} neexistuje`);
 
     if (parseFile.ext === ".kztl") {
         outputFile = path.join(parseFile.dir, `${parseFile.name}.html`);
-    } else resolveErrors("Soubor ke kompilaci musí mít příponu .kztl")
+    } else throw new Error("Soubor ke kompilaci musí mít příponu .kztl");
 
-    try {
-        console.log(`[KZTL]  Hlavní soubor: ${resolvedInputPath}`);
+    console.log(`[KZTL]  Hlavní soubor: ${resolvedInputPath}`);
 
-        const inputCode = fs.readFileSync(resolvedInputPath, 'utf8');
-        const output = transpileKZTL(inputCode);
-    
-        fs.writeFileSync(outputFile, output);
-        console.log(`Úspěšně zkompilováno do: ${outputFile}`);
-    } catch (err) {
-        resolveErrors(`Došlo k neočekávané chybě: ${err.message}`);
-    }
+    const inputCode = fs.readFileSync(resolvedInputPath, 'utf8');
+    const output = transpileKZTL(inputCode);
+
+    fs.writeFileSync(outputFile, output); 
+
+    console.log(`Úspěšně zkompilováno do: ${outputFile}`);
 }
 
-// --- TEST SETUP ---
-/*if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    runTranspiler();
-}*/
+export function runTranspiler() {
+    const inputFile = process.argv[2];
+    
+    if (!inputFile) resolveErrors("Prosím zadejte .kztl soubor jako druhý argument");
+
+    try {
+        compileFile(inputFile);
+    } catch (err) {
+        resolveErrors(err.message)
+    };
+}
 
 export async function main() {
     if (process.argv[2] === 'install-extension') {
