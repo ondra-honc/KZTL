@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const vscodeExtPath = path.join(os.homedir(), '.vscode', 'extensions');
-const extensionName = 'ondrej-honc.kztl-language';
+const extensionName = 'ondrej-honc.kztl';
 const targetPath = path.join(vscodeExtPath, extensionName);
 const sourcePath = path.join(__dirname, 'kztl extension');
 
