@@ -1,9 +1,37 @@
 {
-    "name": "KZTL",
-    "scopeName": "text.html.kztl",
-    "patterns": [
+  "name": "KZTL",
+  "scopeName": "text.html.kztl",
+  "patterns": [
+    {
+      "name": "meta.tag.kztl",
+      "begin": "(</?)([a-zA-Z0-9_\\-]+)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin.html" },
+        "2": { "name": "entity.name.tag.html" }
+      },
+      "end": "(/?>)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.tag.end.html" }
+      },
+      "patterns": [
         {
-            "include": "text.html.basic"
+          "match": "[a-zA-Z0-9_\\-]+",
+          "name": "entity.other.attribute-name.html"
+        },
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.html"
+        },
+        {
+          "begin": "'",
+          "end": "'",
+          "name": "string.quoted.single.html"
         }
-    ]
+      ]
+    },
+    {
+      "include": "text.html.basic"
+    }
+  ]
 }

@@ -3,7 +3,7 @@
   "publisher": "ondrej-honc",
   "displayName": "KZTL Language Support",
   "description": "Treats .kztl files exactly like HTML",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "engines": {
     "vscode": "^1.70.0"
   },
