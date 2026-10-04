@@ -1,7 +1,7 @@
 {
   "name": "kztl",
   "publisher": "ondrej-honc",
-  "displayName": "KZTL Language Support",
+  "displayName": "KZTL: HTML Syntax and Snippets",
   "description": "Treats .kztl files exactly like HTML",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/ondra-honc/KZTL" },
