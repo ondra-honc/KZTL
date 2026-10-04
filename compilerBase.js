@@ -223,6 +223,8 @@ export function transpileKZTL(sourceCode) {
     for (let i = 0; i < lines.length; i++) {
         const lineNum = i + 1;
         const line = lines[i];
+        const firstCharIndex = line.search(/[^\s]/);
+        const leadingIndent = firstCharIndex != -1 ? line.substring(0, firstCharIndex) : line;
         
         switch (clasifyLine(line)) {
             case lineType.OPENINGTAG: {
@@ -232,7 +234,7 @@ export function transpileKZTL(sourceCode) {
                 
                 const attr = transpileAttributes(rawTag[1]);
 
-                attr != "" ? output.push(`<${htmlTag} ${attr}>`) : output.push(`<${htmlTag}${attr}>`);
+                attr != "" ? output.push(leadingIndent + `<${htmlTag} ${attr}>`) : output.push(leadingIndent + `<${htmlTag}${attr}>`);
                  
                 if (!VOID_TAGS.has(htmlTag)) {
                     stack.push({ tag: rawTag[0], htmlTag, line: lineNum});
@@ -252,13 +254,13 @@ export function transpileKZTL(sourceCode) {
 
                 if (lastOpened.htmlTag != htmlTag) throw new Error(`Expected tag: ${lastOpened.htmlTag} on line ${lastOpened.line} not found instead found tag: ${htmlTag}`);
 
-                output.push(`</${htmlTag}>`);
+                output.push(leadingIndent + `</${htmlTag}>`);
 
                 break;
             }
 
             case lineType.CONTENT: {
-                output.push(line.trim());
+                output.push(leadingIndent + line.trim());
                 break;
             }
 
