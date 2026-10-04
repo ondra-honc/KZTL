@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { transpileAttributes, TAG_MAP, extractTag } from '../compilerBase';
+import { transpileAttributes, extractTag } from '../compilerBase';
+import { TAG_MAP } from "../maps"
 
 describe('ATTR_MAP Transpilation', () => {
   it('přeloží základní atributy s hodnotou', () => {
@@ -24,7 +25,7 @@ describe('ATTR_MAP Transpilation', () => {
 
   it('vyhodí chybu u neznámého atributu', () => {
     const input = 'neznamykazdy="test"';
-    expect(() => transpileAttributes(input)).toThrow('neznamykazdy is not included in ATTR_MAP');
+    expect(() => transpileAttributes(input)).toThrow('neznamykazdy není zahrnut v ATTR_MAP');
   });
 });
 

@@ -46,7 +46,7 @@ export function transpileAttributes(attrString) {
     const regex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
     const result = attrString.replace(regex, (_, key, dq, sq) => {
         const mappedKey = ATTR_MAP.get(key);
-        if (mappedKey === undefined) throw new Error(`${key} is not included in ATTR_MAP`);
+        if (mappedKey === undefined) throw new Error(`${key} není zahrnut v ATTR_MAP`);
         const value = dq ?? sq;
         return value === undefined ? mappedKey : `${mappedKey}="${value}"`;
     });
@@ -68,12 +68,12 @@ export function transpileKZTL(sourceCode) {
         
         switch (clasifyLine(line)) {
             case lineType.OPENINGTAG: {
-                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
+                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
                 
                 const rawTag = extractTag(line);
                 const htmlTag = TAG_MAP.get(rawTag[0]);
                 
-                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
+                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v TAG_MAP`);
                 
                 const attr = transpileAttributes(rawTag[1]);
 
@@ -87,17 +87,17 @@ export function transpileKZTL(sourceCode) {
             }
             
             case lineType.CLOSINGTAG: {
-                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
+                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
                 
                 const rawTag = extractTag(line);
                 const htmlTag = TAG_MAP.get(rawTag[0]);
                 
-                if (stack.length == 0) throw new Error(`Opening tag for: ${rawTag[0]} on line ${lineNum} wasn't found`); 
-                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
+                if (stack.length == 0) throw new Error(`Pro tag: ${rawTag[0]} na řádku ${lineNum} nebyl nalezen otevírací tag`); 
+                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v TAG_MAP`);
                 
                 const lastOpened = stack.pop();
 
-                if (lastOpened.htmlTag != htmlTag) throw new Error(`Expected tag: ${lastOpened.htmlTag} on line ${lastOpened.line} not found instead found tag: ${htmlTag}`);
+                if (lastOpened.htmlTag != htmlTag) throw new Error(`Očekáván tag: ${lastOpened.htmlTag} z řádku ${lastOpened.line}, ale nalezen tag: ${htmlTag}`);
 
                 output.push(leadingIndent + `</${htmlTag}>`);
 
@@ -106,7 +106,7 @@ export function transpileKZTL(sourceCode) {
 
             case lineType.CONTENT: {
                 if (line.trim().length == 0) continue;
-                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
+                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
                 output.push(leadingIndent + line.trim());
                 break;
             }
@@ -115,26 +115,26 @@ export function transpileKZTL(sourceCode) {
                 if (!seenDoctypeDeclaration) {
                     const rawTag = extractTag(line);
                     const documentTag = DOCUMENT_DEC.get(rawTag[0]);
-                    if (documentTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in DOCUMENT_DEC`);
+                    if (documentTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v DOCUMENT_DEC`);
     
                     const attr = rawTag[1];
     
-                    if (attr == "") throw new Error(`On line: ${lineNum} forgot to declare document type`);
-                    if (attr.toLowerCase().trim() != "kztl") throw new Error(`On line: ${lineNum} you must declare using the kztl type`);
+                    if (attr == "") throw new Error(`Na řádku ${lineNum} chybí typ dokumentu`);
+                    if (attr.toLowerCase().trim() != "kztl") throw new Error(`Na řádku ${lineNum} musíte použít typ kztl`);
     
                     seenDoctypeDeclaration = true;
                     output.push(`<${documentTag} html>`);
                     break;
                 }
 
-                throw new Error(`You already defined doctype on line ${lineNum}`);
+                throw new Error(`Doctype už byl definován na řádku ${lineNum}`);
             }
         }
     }
 
     if (stack.length > 0) {
-        const mapped = stack.map((e) => `- tag: ${e.tag} on line: ${e.line}`).join('\n');
-        throw new Error(`Found unclosed tags: \n${mapped}`);
+        const mapped = stack.map((e) => `- tag: ${e.tag} na řádku: ${e.line}`).join('\n');
+        throw new Error(`Nalezeny neuzavřené tagy: \n${mapped}`);
     }
 
     return output.join('\n');

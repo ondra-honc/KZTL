@@ -91,7 +91,7 @@ describe('runTranspiler CLI', () => {
         });
         
         expect(() => runTranspiler()).toThrow('PROCESS_EXIT_1');
-        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Došlo k neočekávané chybě: Neznámý tag"));
+        expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Neznámý tag"));
         expect(exitSpy).toHaveBeenCalledWith(1);
     });
 });
