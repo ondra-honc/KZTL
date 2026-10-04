@@ -1,5 +1,6 @@
 {
   "name": "kztl",
+  "publisher": "ondrej-honc",
   "displayName": "KZTL Language Support",
   "description": "Treats .kztl files exactly like HTML",
   "version": "1.0.0",
