@@ -21,8 +21,8 @@
           ".kztl"
         ],
         "icon": {
-          "light": "./icons/ktzl-file.svg",
-          "dark": "./icons/ktzl-file.svg"
+          "light": "./icons/kztl-file.svg",
+          "dark": "./icons/kztl-file.svg"
         }
       }
     ],
