@@ -1,8 +1,13 @@
 export const lineType = Object.freeze({
     OPENINGTAG: 0,
     CLOSINGTAG: 1,
-    CONTENT: 2
+    CONTENT: 2,
+    DOCUMENTDECLARATION: 3
 });
+
+export const DOCUMENT_DEC = new Map([
+    ["!DOCTYPE", "!DOCTYPE"]
+]);
 
 export const TAG_MAP = new Map([
     // Document Metadata
@@ -171,9 +176,11 @@ const VOID_TAGS = new Set([
 
 export function clasifyLine(line) {
     const trimmed = line.trim();
+    const correctEnd = trimmed.endsWith('>');
 
-    if (trimmed.startsWith('</') && trimmed.endsWith('>')) return lineType.CLOSINGTAG;
-    if (trimmed.startsWith('<') && trimmed.endsWith('>')) return lineType.OPENINGTAG;
+    if (trimmed.startsWith('</') && correctEnd) return lineType.CLOSINGTAG;
+    if (trimmed.startsWith('<!') && correctEnd) return lineType.DOCUMENTDECLARATION;
+    if (trimmed.startsWith('<') && correctEnd) return lineType.OPENINGTAG;
     return lineType.CONTENT;
 }
 
@@ -203,8 +210,8 @@ export function extractTag(tag) {
 export function transpileAttributes(attrString) {
     if (!attrString.trim()) return "";
     
-    const regex = /([a-zA-Z0-9_-]+)(?:=\s*"([^"]*)")?/g;
-    const result = attrString.replace(regex, (FullMatch, key, value) => {
+    const regex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
+    const result = attrString.replace(regex, (key, value) => {
         if (ATTR_MAP.get(key) == undefined) throw new Error(`${key} is not included in ATTR_MAP`);
         
         const mappedKey =  ATTR_MAP.get(key);
@@ -216,9 +223,10 @@ export function transpileAttributes(attrString) {
 }
 
 export function transpileKZTL(sourceCode) {
-    const lines = sourceCode.split('\n');
+    const lines = sourceCode.split(/\r?\n/);
     const output = [];
     const stack = []; // Stores { tag: string, htmlTag: string, line: number }
+    let seenDoctypeDeclaration = false;
 
     for (let i = 0; i < lines.length; i++) {
         const lineNum = i + 1;
@@ -226,8 +234,10 @@ export function transpileKZTL(sourceCode) {
         const firstCharIndex = line.search(/[^\s]/);
         const leadingIndent = firstCharIndex != -1 ? line.substring(0, firstCharIndex) : line;
         
+        
         switch (clasifyLine(line)) {
             case lineType.OPENINGTAG: {
+                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
                 const rawTag = extractTag(line);
                 const htmlTag = TAG_MAP.get(rawTag[0]);
                 if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
@@ -244,6 +254,7 @@ export function transpileKZTL(sourceCode) {
             }
             
             case lineType.CLOSINGTAG: {
+                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
                 const rawTag = extractTag(line);
                 if (stack.length == 0) throw new Error(`Opening tag for: ${rawTag[0]} on line ${lineNum} wasn't found`); 
                 
@@ -260,8 +271,29 @@ export function transpileKZTL(sourceCode) {
             }
 
             case lineType.CONTENT: {
+                if (line.trim().length == 0) continue;
+                if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
                 output.push(leadingIndent + line.trim());
                 break;
+            }
+            
+            case lineType.DOCUMENTDECLARATION: {
+                if (!seenDoctypeDeclaration) {
+                    const rawTag = extractTag(line);
+                    const documentTag = DOCUMENT_DEC.get(rawTag[0]);
+                    if (documentTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in DOCUMENT_DEC`);
+    
+                    const attr = rawTag[1];
+    
+                    if (attr == "") throw new Error(`On line: ${lineNum} forgot to declare document type`);
+                    if (attr.toLowerCase().trim() != "kztl") throw new Error(`On line: ${lineNum} you must declare using the kztl type`);
+    
+                    seenDoctypeDeclaration = true;
+                    output.push(`<${documentTag} html>`);
+                    break;
+                }
+
+                throw new Error("You already defined doctype");
             }
 
             default:
