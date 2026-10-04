@@ -1,0 +1,19 @@
+{
+    "KZTL Document Template" : {
+        "prefix": "!",
+        "body": [
+            "<!DOCTYPE kztl>",
+            "<hlavnikazdic jazykkazdy='cs'>",
+            "<head>",
+            "\t<meta kodovanikazdy='UTF-8'>",
+            "\t<meta jmenokazdy='viewport' obsahkazdy='width=device-width, initial-scale=1.0'>",
+            "\t<titulekkazdy>${1:Document}</titulekkazdy>",
+            "</head>",
+            "<kazdic>",
+            "\t$0",
+            "</kazdic>",
+            "</hlavnikazdic>"
+        ],
+        "description": "Basic KZTL document structure"
+    }
+}
