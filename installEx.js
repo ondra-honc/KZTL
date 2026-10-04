@@ -1,6 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const vscodeExtPath = path.join(os.homedir(), '.vscode', 'extensions');
 const extensionName = 'kztl-language';
