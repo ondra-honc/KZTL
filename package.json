@@ -6,7 +6,8 @@
     "kztl": "./transpile.js"
   },
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "postinstall": "node installEx.js"
   },
   "devDependencies": {
     "vitest": "^4.1.11"
