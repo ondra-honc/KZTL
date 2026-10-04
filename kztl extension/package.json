@@ -2,10 +2,11 @@
   "name": "kztl",
   "publisher": "ondrej-honc",
   "displayName": "KZTL: HTML Syntax and Snippets",
+  "icon": "./icons/icon.png",
   "description": "Treats .kztl files exactly like HTML",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/ondra-honc/KZTL" },
-  "version": "1.0.5",
+  "version": "1.1.5",
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -18,7 +19,11 @@
         "id": "kztl",
         "extensions": [
           ".kztl"
-        ]
+        ],
+        "icon": {
+          "light": "./icons/ktzl-file.svg",
+          "dark": "./icons/ktzl-file.svg"
+        }
       }
     ],
     "grammars": [
