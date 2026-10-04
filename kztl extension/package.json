@@ -1,0 +1,22 @@
+{
+  "name": "kztl",
+  "displayName": "KZTL Language Support",
+  "description": "Treats .kztl files exactly like HTML",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "html",
+        "extensions": [
+          ".kztl"
+        ]
+      }
+    ]
+  }
+}
