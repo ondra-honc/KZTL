@@ -13,10 +13,23 @@
   "contributes": {
     "languages": [
       {
-        "id": "html",
+        "id": "kztl",
         "extensions": [
           ".kztl"
         ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "kztl",
+        "scopeName": "text.html.kztl",
+        "path": "./syntaxes/kztl.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "kztl",
+        "path": "./syntaxes/kztl.json"
       }
     ]
   }
