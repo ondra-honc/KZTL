@@ -1,4 +1,4 @@
-import { TAG_MAP, ATTR_MAP, DOCUMENT_DEC, VOID_TAGS } from "./maps";
+import { TAG_MAP, ATTR_MAP, DOCUMENT_DEC, VOID_TAGS } from "./maps.js";
 
 export const lineType = Object.freeze({
     OPENINGTAG: 0,
