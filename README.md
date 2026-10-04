@@ -9,3 +9,5 @@ Pro stáhnutí rozčíření později:
 ```bash
 kztl install-extension
 ```
+
+nebo můžete vyhledat v extension marketplacu (KZTL: HTML Syntax and Snippets) / použít připravený .vsix
