@@ -208,16 +208,15 @@ export function extractTag(tag) {
 }
 
 export function transpileAttributes(attrString) {
-    if (!attrString.trim()) return "";
+    if (!attrString) return "";
     
     const regex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
-    const result = attrString.replace(regex, (key, value) => {
-        if (ATTR_MAP.get(key) == undefined) throw new Error(`${key} is not included in ATTR_MAP`);
-        
-        const mappedKey =  ATTR_MAP.get(key);
-        if (value == undefined) return `${mappedKey}`
-        return `${mappedKey}="${value}"`
-    })
+    const result = attrString.replace(regex, (_, key, dq, sq) => {
+        const mappedKey = ATTR_MAP.get(key);
+        if (mappedKey === undefined) throw new Error(`${key} is not included in ATTR_MAP`);
+        const value = dq ?? sq;
+        return value === undefined ? mappedKey : `${mappedKey}="${value}"`;
+    });
 
     return result;
 }
@@ -234,17 +233,18 @@ export function transpileKZTL(sourceCode) {
         const firstCharIndex = line.search(/[^\s]/);
         const leadingIndent = firstCharIndex != -1 ? line.substring(0, firstCharIndex) : line;
         
-        
         switch (clasifyLine(line)) {
             case lineType.OPENINGTAG: {
                 if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
+                
                 const rawTag = extractTag(line);
                 const htmlTag = TAG_MAP.get(rawTag[0]);
+                
                 if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
                 
                 const attr = transpileAttributes(rawTag[1]);
 
-                attr != "" ? output.push(leadingIndent + `<${htmlTag} ${attr}>`) : output.push(leadingIndent + `<${htmlTag}${attr}>`);
+                output.push(`${leadingIndent}<${htmlTag}${attr == "" ? "" : " " + attr}>`);
                  
                 if (!VOID_TAGS.has(htmlTag)) {
                     stack.push({ tag: rawTag[0], htmlTag, line: lineNum});
@@ -255,10 +255,11 @@ export function transpileKZTL(sourceCode) {
             
             case lineType.CLOSINGTAG: {
                 if (!seenDoctypeDeclaration) throw new Error("Please declare doctype on top of your file");
-                const rawTag = extractTag(line);
-                if (stack.length == 0) throw new Error(`Opening tag for: ${rawTag[0]} on line ${lineNum} wasn't found`); 
                 
+                const rawTag = extractTag(line);
                 const htmlTag = TAG_MAP.get(rawTag[0]);
+                
+                if (stack.length == 0) throw new Error(`Opening tag for: ${rawTag[0]} on line ${lineNum} wasn't found`); 
                 if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} on line: ${lineNum} doesn't exist in TAG_MAP`);
                 
                 const lastOpened = stack.pop();
@@ -293,11 +294,8 @@ export function transpileKZTL(sourceCode) {
                     break;
                 }
 
-                throw new Error("You already defined doctype");
+                throw new Error(`You already defined doctype on line ${lineNum}`);
             }
-
-            default:
-                throw new Error(`Line: ${line} is not a valid line type`);
         }
     }
 
