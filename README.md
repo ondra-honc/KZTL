@@ -4,3 +4,8 @@ Pro stáhnutí spusťte:
 ```bash
 npm install -g @ondra_honc/kztl
 ```
+
+Pro stáhnutí rozčíření později:
+```bash
+kztl install-extension
+```
