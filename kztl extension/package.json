@@ -3,6 +3,8 @@
   "publisher": "ondrej-honc",
   "displayName": "KZTL Language Support",
   "description": "Treats .kztl files exactly like HTML",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/ondra-honc/KZTL" },
   "version": "1.0.5",
   "engines": {
     "vscode": "^1.70.0"
