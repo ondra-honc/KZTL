@@ -1,0 +1,9 @@
+{
+    "name": "KZTL",
+    "scopeName": "text.html.kztl",
+    "patterns": [
+        {
+            "include": "text.html.basic"
+        }
+    ]
+}
