@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { transpileKZTL } from './compilerBase.js';
 import { maybePromptForExtension, installExtension } from './firstRun.js';
 
+const STOP_SIGNALS = ["SIGINT", "SIGTERM"];
+
 function resolveErrors(text) {
     console.error(text);
     process.exit(1);
@@ -50,6 +52,43 @@ export async function main() {
 
     runTranspiler();              
     await maybePromptForExtension(); 
+}
+
+export function watchTranspiler(inputFile) {
+    let watcher;
+    let timer;
+    
+    const stopWatching = () => {
+        watcher?.close();
+        clearTimeout(timer);
+        console.log("Sledování ukončeno");
+        process.exit(0);
+    };
+    
+    for (const signal of STOP_SIGNALS) {
+        process.on(signal, stopWatching);
+    }
+
+    console.log("Sleduji změny... stisknutím Ctrl + C ukončíte sledování");
+
+    try {
+        compileFile(inputFile);
+    } catch (err) {
+        console.error(err.message);
+    }
+
+    try {
+        watcher = fs.watch(inputFile, (eventType, fileName) => {
+            if (!fileName || fileName != inputFile) return;
+
+            timer = setTimeout(() => {
+                onChange(eventType, fileName);
+                timer = undefined;
+            }, 100)
+        });
+    } catch (err) {
+        resolveErrors(err.message);
+    }
 }
 
 const isMain = fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
