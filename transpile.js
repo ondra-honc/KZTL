@@ -10,6 +10,10 @@ function resolveErrors(text) {
     process.exit(1);
 }
 
+function getInputFile() {
+    return process.argv.slice(2).find(arg => !arg.startsWith('--') && arg !== 'install-extension');
+}
+
 export function compileFile(inputFile) {
     let outputFile;
     const resolvedInputPath = path.resolve(inputFile);
@@ -98,6 +102,13 @@ export async function main() {
         process.exit(installExtension() ? 0 : 1);
     }
 
-    runTranspiler();              
+    const inputFile = getInputFile();
+
+    if (process.argv.includes("--watch")) {
+        watchTranspiler(inputFile); 
+    } else {
+        runTranspiler(inputFile); 
+    }
+    
     await maybePromptForExtension(); 
 }
