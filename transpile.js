@@ -64,6 +64,15 @@ export function watchTranspiler(inputFile) {
         console.log("Sledování ukončeno");
         process.exit(0);
     };
+
+    const onChange = () => {
+        try {
+            console.log("Soubor změněn, překládám znovu");
+            compileFile(inputFile);
+        } catch (err) {
+            console.error(err.message);
+        }
+    }
     
     for (const signal of STOP_SIGNALS) {
         process.on(signal, stopWatching);
@@ -79,10 +88,12 @@ export function watchTranspiler(inputFile) {
 
     try {
         watcher = fs.watch(inputFile, (eventType, fileName) => {
-            if (!fileName || fileName != inputFile) return;
+            if (!fileName || fileName != path.basename(path.resolve(inputFile))) return;
+
+            clearTimeout(timer)
 
             timer = setTimeout(() => {
-                onChange(eventType, fileName);
+                onChange();
                 timer = undefined;
             }, 100)
         });
