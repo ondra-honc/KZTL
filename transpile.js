@@ -1,7 +1,5 @@
-#!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { transpileKZTL } from './compilerBase.js';
 import { maybePromptForExtension, installExtension } from './firstRun.js';
 
@@ -43,15 +41,6 @@ export function runTranspiler() {
     } catch (err) {
         resolveErrors(err.message)
     };
-}
-
-export async function main() {
-    if (process.argv[2] === 'install-extension') {
-        process.exit(installExtension() ? 0 : 1);
-    }
-
-    runTranspiler();              
-    await maybePromptForExtension(); 
 }
 
 export function watchTranspiler(inputFile) {
@@ -102,5 +91,13 @@ export function watchTranspiler(inputFile) {
     }
 }
 
-const isMain = fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) await main();
+
+
+export async function main() {
+    if (process.argv[2] === 'install-extension') {
+        process.exit(installExtension() ? 0 : 1);
+    }
+
+    runTranspiler();              
+    await maybePromptForExtension(); 
+}

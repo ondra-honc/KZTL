@@ -3,7 +3,7 @@
   "version": "1.3.13",
   "type": "module",
   "bin": {
-    "kztl": "./transpile.js"
+    "kztl": "./main.js"
   },
   "scripts": {
     "test": "vitest"
