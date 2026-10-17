@@ -1,23 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clasifyLine, extractTag, lineType } from '../compilerBase';
-
-describe('clasifyLine', () => {
-    it('identifies opening tags', () => {
-        expect(clasifyLine('<div>')).toBe(lineType.OPENINGTAG);
-        expect(clasifyLine('  <span id="app"> ')).toBe(lineType.OPENINGTAG);
-    });
-
-    it('identifies closing tags', () => {
-        expect(clasifyLine('</div>')).toBe(lineType.CLOSINGTAG);
-        expect(clasifyLine('  </span> ')).toBe(lineType.CLOSINGTAG);
-    });
-
-    it('identifies standard content', () => {
-        expect(clasifyLine('Hello World')).toBe(lineType.CONTENT);
-        expect(clasifyLine('< incomplete line')).toBe(lineType.CONTENT);
-        expect(clasifyLine('not a tag >')).toBe(lineType.CONTENT);
-    });
-});
+import {extractTag} from '../compilerBase';
 
 describe('extractTag', () => {
     it('extracts simple tag with no attributes', () => {

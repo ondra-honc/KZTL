@@ -182,3 +182,174 @@ describe('transpileKZTL - Chybové stavy (Validace a stromová struktura)', () =
             .toThrow("neznama není zahrnut v ATTR_MAP");
     });
 });
+
+describe('transpileKZTL - Zápis jako v HTML (jeden řádek i více řádků)', () => {
+    it('přeloží tagy a text na jednom řádku', () => {
+        const input = `${DOCTYPE_IN}\n<mluvikazda>Ahoj</mluvikazda>`;
+        expect(transpileKZTL(input)).toBe(`${DOCTYPE_OUT}\n<p>Ahoj</p>`);
+    });
+
+    it('přeloží celý dokument zapsaný na jednom řádku', () => {
+        const input = `${DOCTYPE_IN}<hlavnikazdic><kazdic>Ahoj</kazdic></hlavnikazdic>`;
+        expect(transpileKZTL(input)).toBe(`${DOCTYPE_OUT}<html><body>Ahoj</body></html>`);
+    });
+
+    it('přeloží tag s atributem rozdělený na více řádků', () => {
+        const input = [
+            DOCTYPE_IN,
+            '<odkaznakazdu',
+            '  odkazkazdy="a.html">',
+            'x',
+            '</odkaznakazdu>'
+        ].join('\n');
+
+        const expected = [
+            DOCTYPE_OUT,
+            '<a href="a.html">',
+            'x',
+            '</a>'
+        ].join('\n');
+
+        expect(transpileKZTL(input)).toBe(expected);
+    });
+
+    it('zachová zalomení mezi atributy v tagu rozděleném na více řádků', () => {
+        const input = [
+            DOCTYPE_IN,
+            '<odkaznakazdu',
+            '  odkazkazdy="a.html"',
+            '  cilkazdy="_blank">',
+            '</odkaznakazdu>'
+        ].join('\n');
+
+        const expected = [
+            DOCTYPE_OUT,
+            '<a href="a.html"',
+            '  target="_blank">',
+            '</a>'
+        ].join('\n');
+
+        expect(transpileKZTL(input)).toBe(expected);
+    });
+
+    it('nepovažuje > v hodnotě atributu za konec tagu', () => {
+        const input = [
+            DOCTYPE_IN,
+            '<oddilkazdy titulekkazdy="a > b">',
+            '</oddilkazdy>'
+        ].join('\n');
+
+        const expected = [
+            DOCTYPE_OUT,
+            '<div title="a > b">',
+            '</div>'
+        ].join('\n');
+
+        expect(transpileKZTL(input)).toBe(expected);
+    });
+
+    it('zachová víceřádkový text uvnitř tagu', () => {
+        const input = [
+            DOCTYPE_IN,
+            '<mluvikazda>',
+            '  řádek 1',
+            '  řádek 2',
+            '</mluvikazda>'
+        ].join('\n');
+
+        expect(transpileKZTL(input)).toBe([
+            DOCTYPE_OUT,
+            '<p>',
+            '  řádek 1',
+            '  řádek 2',
+            '</p>'
+        ].join('\n'));
+    });
+
+    it('nepovažuje < následované mezerou za začátek tagu', () => {
+        const input = `${DOCTYPE_IN}\n<mluvikazda>1 < 2</mluvikazda>`;
+        expect(transpileKZTL(input)).toBe(`${DOCTYPE_OUT}\n<p>1 < 2</p>`);
+    });
+
+    it('zachová prázdné řádky', () => {
+        const input = [DOCTYPE_IN, '', '<kazdic>', '', '</kazdic>'].join('\n');
+        expect(transpileKZTL(input)).toBe([DOCTYPE_OUT, '', '<body>', '', '</body>'].join('\n'));
+    });
+
+    it('převede konce řádků CRLF na LF', () => {
+        const input = [DOCTYPE_IN, '<kazdic>', 'Ahoj', '</kazdic>'].join('\r\n');
+        expect(transpileKZTL(input)).toBe([DOCTYPE_OUT, '<body>', 'Ahoj', '</body>'].join('\n'));
+    });
+});
+
+describe('transpileKZTL - script a style', () => {
+    it('přeloží import skriptu', () => {
+        const input = [
+            DOCTYPE_IN,
+            '<kazdic>',
+            '<script zdrojkazdy="app.js">',
+            '</script>',
+            '</kazdic>'
+        ].join('\n');
+
+        expect(transpileKZTL(input)).toBe([
+            DOCTYPE_OUT,
+            '<body>',
+            '<script src="app.js">',
+            '</script>',
+            '</body>'
+        ].join('\n'));
+    });
+
+    it('zkopíruje obsah skriptu beze změny, včetně znaku <', () => {
+        const code = '  for (let i=0;i<n;i++) { if (a<b) x(); }';
+        const input = [DOCTYPE_IN, '<script>', code, '</script>'].join('\n');
+
+        expect(transpileKZTL(input)).toBe([DOCTYPE_OUT, '<script>', code, '</script>'].join('\n'));
+    });
+
+    it('nepřekládá tagy uvnitř skriptu', () => {
+        const code = 'x = "<b>není tag</b>";';
+        const input = [DOCTYPE_IN, '<script>', code, '</script>'].join('\n');
+
+        expect(transpileKZTL(input)).toBe([DOCTYPE_OUT, '<script>', code, '</script>'].join('\n'));
+    });
+
+    it('vyhodí chybu pro zakázaný tag style', () => {
+        const input = [DOCTYPE_IN, '<style>'].join('\n');
+        expect(() => transpileKZTL(input))
+            .toThrow('Tag: style na řádku 2 je v KZTL zakázán');
+    });
+
+    it('vyhodí chybu pro neuzavřený script', () => {
+        const input = [DOCTYPE_IN, '<script>', 'var a = 1;'].join('\n');
+        expect(() => transpileKZTL(input))
+            .toThrow('Nalezeny neuzavřené tagy: \n- tag: script na řádku: 2');
+    });
+});
+
+describe('transpileKZTL - Chyby u zápisu jako v HTML', () => {
+    it('vyhodí chybu pro nedokončený tag', () => {
+        const input = [DOCTYPE_IN, '<kazdic>', '<oddilkazdy tridakazdy="x"'].join('\n');
+        expect(() => transpileKZTL(input)).toThrow('Nedokončený tag na řádku 3');
+    });
+
+    it('hlásí správný řádek u tagů na jednom řádku', () => {
+        const input = [DOCTYPE_IN, '<kazdic><neexistujikazdy>'].join('\n');
+        expect(() => transpileKZTL(input))
+            .toThrow('Tag: neexistujikazdy na řádku 2 neexistuje v TAG_MAP');
+    });
+
+    it('hlásí správný řádek po víceřádkovém tagu a prázdných řádcích', () => {
+        const input = [
+            DOCTYPE_IN,                 // 1
+            '<kazdic>',                 // 2
+            '',                         // 3
+            '<oddilkazdy',              // 4
+            '  tridakazdy="x">',        // 5
+            '</kazdic>'                 // 6
+        ].join('\n');
+        expect(() => transpileKZTL(input))
+            .toThrow('Očekáván tag: div z řádku 4, ale nalezen tag: body');
+    });
+});
