@@ -166,3 +166,7 @@ export const VOID_TAGS = new Set([
     "input",
     "meta"
 ]);
+
+export const FLAGS = new Set([
+    "--watch"
+])

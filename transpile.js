@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { transpileKZTL } from './compilerBase.js';
 import { maybePromptForExtension, installExtension } from './firstRun.js';
+import { FLAGS } from "./maps.js";
 
 const STOP_SIGNALS = ["SIGINT", "SIGTERM"];
 
@@ -35,11 +36,7 @@ export function compileFile(inputFile) {
     console.log(`Úspěšně zkompilováno do: ${outputFile}`);
 }
 
-export function runTranspiler() {
-    const inputFile = process.argv[2];
-    
-    if (!inputFile) resolveErrors("Prosím zadejte .kztl soubor jako druhý argument");
-
+export function runTranspiler(inputFile) {
     try {
         compileFile(inputFile);
     } catch (err) {
@@ -103,12 +100,20 @@ export async function main() {
     }
 
     const inputFile = getInputFile();
+    if (inputFile == undefined) resolveErrors("Prosím zadejte .kztl soubor");
 
-    if (process.argv.includes("--watch")) {
-        watchTranspiler(inputFile); 
-    } else {
-        runTranspiler(inputFile); 
+    const flags = process.argv.slice(2).filter(arg => arg.startsWith('--'));
+
+    const unknown = flags.filter(flag => !FLAGS.has(flag));
+    if (unknown.length > 0) {
+        resolveErrors(`Neznámá vlajka: ${unknown.join(', ')}. Platné vlajky: ${[...FLAGS].join(', ')}`);
     }
-    
-    await maybePromptForExtension(); 
+
+    if (flags.includes('--watch')) {
+        watchTranspiler(inputFile);
+        return;
+    }
+
+    runTranspiler(inputFile);
+    await maybePromptForExtension();
 }
