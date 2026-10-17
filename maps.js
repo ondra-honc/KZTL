@@ -2,6 +2,9 @@ export const DOCUMENT_DEC = new Map([
     ["!DOCTYPE", "!DOCTYPE"]
 ]);
 
+export const FORBIDDEN_TAGS = new Set(["style"]);
+export const RAW_TEXT_TAGS = new Set(["script"]);
+
 export const TAG_MAP = new Map([
     // Document Metadata
     ["hlavnikazdic", "html"],
@@ -10,7 +13,7 @@ export const TAG_MAP = new Map([
     ["base", "base"],
     ["link", "link"],
     ["meta", "meta"],
-    ["style", "style"],
+    ["script", "script"],
 
     // Sections
     ["kazdic", "body"],

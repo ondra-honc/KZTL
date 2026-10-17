@@ -1,21 +1,11 @@
-import { TAG_MAP, ATTR_MAP, DOCUMENT_DEC, VOID_TAGS } from "./maps.js";
+import { TAG_MAP, ATTR_MAP, DOCUMENT_DEC, VOID_TAGS, FORBIDDEN_TAGS, RAW_TEXT_TAGS } from "./maps.js";
 
-export const lineType = Object.freeze({
-    OPENINGTAG: 0,
-    CLOSINGTAG: 1,
-    CONTENT: 2,
-    DOCUMENTDECLARATION: 3
+export const tokenType = Object.freeze({
+    OPEN: 0,
+    CLOSE: 1,
+    TEXT: 2,
+    DECLARATION: 3
 });
-
-export function clasifyLine(line) {
-    const trimmed = line.trim();
-    const correctEnd = trimmed.endsWith('>');
-
-    if (trimmed.startsWith('</') && correctEnd) return lineType.CLOSINGTAG;
-    if (trimmed.startsWith('<!') && correctEnd) return lineType.DOCUMENTDECLARATION;
-    if (trimmed.startsWith('<') && correctEnd) return lineType.OPENINGTAG;
-    return lineType.CONTENT;
-}
 
 export function extractTag(tag) {
     let content = tag.trim().slice(1, -1).trim();
@@ -28,7 +18,7 @@ export function extractTag(tag) {
         content = content.substring(0,content.length - 1).trim();
     }
 
-    const firstSpaceIndex = content.indexOf(" ");
+    const firstSpaceIndex = content.search(/\s/);
 
     if (firstSpaceIndex === -1) {
         return [content, ""];
@@ -44,90 +34,73 @@ export function transpileAttributes(attrString) {
     if (!attrString) return "";
     
     const regex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
-    const result = attrString.replace(regex, (_, key, dq, sq) => {
+    return attrString.replace(regex, (_, key, dq, sq) => {
         const mappedKey = ATTR_MAP.get(key);
         if (mappedKey === undefined) throw new Error(`${key} není zahrnut v ATTR_MAP`);
         const value = dq ?? sq;
         return value === undefined ? mappedKey : `${mappedKey}="${value}"`;
     });
-
-    return result;
 }
 
-export function transpileKZTL(sourceCode) {
-    const lines = sourceCode.split(/\r?\n/);
+export function buildHtml(tokens) {
     const output = [];
-    const stack = []; // Stores { tag: string, htmlTag: string, line: number }
-    let seenDoctypeDeclaration = false;
+    const stack = []; 
+    let seenDoctype = false;
 
-    for (let i = 0; i < lines.length; i++) {
-        const lineNum = i + 1;
-        const line = lines[i];
-        const firstCharIndex = line.search(/[^\s]/);
-        const leadingIndent = firstCharIndex != -1 ? line.substring(0, firstCharIndex) : line;
-        
-        switch (clasifyLine(line)) {
-            case lineType.OPENINGTAG: {
-                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
-                
-                const rawTag = extractTag(line);
-                const htmlTag = TAG_MAP.get(rawTag[0]);
-                
-                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v TAG_MAP`);
-                
-                const attr = transpileAttributes(rawTag[1]);
+    for (const token of tokens) {
+        if (token.type !== tokenType.DECLARATION && !seenDoctype) {
+            throw new Error("Prosím deklarujte doctype na začátku souboru");
+        }
 
-                output.push(`${leadingIndent}<${htmlTag}${attr == "" ? "" : " " + attr}>`);
-                 
+        switch (token.type) {
+            case tokenType.OPEN: {
+                if (FORBIDDEN_TAGS.has(token.name.toLowerCase())) {
+                    throw new Error(`Tag: ${token.name} na řádku ${token.line} je v KZTL zakázán`);
+                }
+
+                const htmlTag = TAG_MAP.get(token.name);
+                if (htmlTag === undefined) throw new Error(`Tag: ${token.name} na řádku ${token.line} neexistuje v TAG_MAP`);
+
+                const attr = transpileAttributes(token.attrs);
+                output.push(`${token.leading}<${htmlTag}${attr === "" ? "" : " " + attr}>`);
+
                 if (!VOID_TAGS.has(htmlTag)) {
-                    stack.push({ tag: rawTag[0], htmlTag, line: lineNum});
+                    stack.push({ tag: token.name, htmlTag, line: token.line });
                 }
-                
                 break;
             }
-            
-            case lineType.CLOSINGTAG: {
-                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
-                
-                const rawTag = extractTag(line);
-                const htmlTag = TAG_MAP.get(rawTag[0]);
-                
-                if (stack.length == 0) throw new Error(`Pro tag: ${rawTag[0]} na řádku ${lineNum} nebyl nalezen otevírací tag`); 
-                if (htmlTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v TAG_MAP`);
-                
+
+            case tokenType.CLOSE: {
+                const htmlTag = TAG_MAP.get(token.name);
+
+                if (stack.length === 0) throw new Error(`Pro tag: ${token.name} na řádku ${token.line} nebyl nalezen otevírací tag`);
+                if (htmlTag === undefined) throw new Error(`Tag: ${token.name} na řádku ${token.line} neexistuje v TAG_MAP`);
+
                 const lastOpened = stack.pop();
-
-                if (lastOpened.htmlTag != htmlTag) throw new Error(`Očekáván tag: ${lastOpened.htmlTag} z řádku ${lastOpened.line}, ale nalezen tag: ${htmlTag}`);
-
-                output.push(leadingIndent + `</${htmlTag}>`);
-
-                break;
-            }
-
-            case lineType.CONTENT: {
-                if (line.trim().length == 0) continue;
-                if (!seenDoctypeDeclaration) throw new Error("Prosím deklarujte doctype na začátku souboru");
-                output.push(leadingIndent + line.trim());
-                break;
-            }
-            
-            case lineType.DOCUMENTDECLARATION: {
-                if (!seenDoctypeDeclaration) {
-                    const rawTag = extractTag(line);
-                    const documentTag = DOCUMENT_DEC.get(rawTag[0]);
-                    if (documentTag == undefined) throw new Error(`Tag: ${rawTag[0]} na řádku ${lineNum} neexistuje v DOCUMENT_DEC`);
-    
-                    const attr = rawTag[1];
-    
-                    if (attr == "") throw new Error(`Na řádku ${lineNum} chybí typ dokumentu`);
-                    if (attr.toLowerCase().trim() != "kztl") throw new Error(`Na řádku ${lineNum} musíte použít typ kztl`);
-    
-                    seenDoctypeDeclaration = true;
-                    output.push(`<${documentTag} html>`);
-                    break;
+                if (lastOpened.htmlTag !== htmlTag) {
+                    throw new Error(`Očekáván tag: ${lastOpened.htmlTag} z řádku ${lastOpened.line}, ale nalezen tag: ${htmlTag}`);
                 }
 
-                throw new Error(`Doctype už byl definován na řádku ${lineNum}`);
+                output.push(`${token.leading}</${htmlTag}>`);
+                break;
+            }
+
+            case tokenType.TEXT:
+                output.push(token.leading + token.text);
+                break;
+
+            case tokenType.DECLARATION: {
+                if (seenDoctype) throw new Error(`Doctype už byl definován na řádku ${token.line}`);
+
+                const documentTag = DOCUMENT_DEC.get(token.name);
+                if (documentTag === undefined) throw new Error(`Tag: ${token.name} na řádku ${token.line} neexistuje v DOCUMENT_DEC`);
+
+                if (token.attrs === "") throw new Error(`Na řádku ${token.line} chybí typ dokumentu`);
+                if (token.attrs.toLowerCase().trim() !== "kztl") throw new Error(`Na řádku ${token.line} musíte použít typ kztl`);
+
+                seenDoctype = true;
+                output.push(`<${documentTag} html>`);
+                break;
             }
         }
     }
@@ -137,5 +110,104 @@ export function transpileKZTL(sourceCode) {
         throw new Error(`Nalezeny neuzavřené tagy: \n${mapped}`);
     }
 
-    return output.join('\n');
+    return output.join('');
+}
+
+function findTagStart(src, from) {
+    const re = /<(?=[A-Za-z\/!])/g;
+    re.lastIndex = from;
+    const match = re.exec(src);
+    return match ? match.index : -1;
+}
+
+function findTagEnd(src, start) {
+    let quote = null;
+    for (let i = start + 1; i < src.length; i++) {
+        const ch = src[i];
+        if (quote) {
+            if (ch === quote) quote = null;
+        } else if (ch === '"' || ch === "'") {
+            quote = ch;
+        } else if (ch === ">") {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function countNewlines(text) {
+    let count = 0;
+    for (const ch of text) if (ch === "\n") count++;
+    return count;
+}
+
+export function tokenizeSource(sourceCode) {
+    const src = sourceCode.replace(/\r\n/g, "\n");
+    const tokens = [];
+    let pos = 0;
+    let line = 1;
+    let pending = "";
+
+    while (pos < src.length) {
+        const tagStart = findTagStart(src, pos);
+        const segmentEnd = tagStart === -1 ? src.length : tagStart;
+        const segment = src.slice(pos, segmentEnd);
+
+        if (segment !== "") {
+            const trimmedEnd = segment.trimEnd();
+            const leadLength = segment.length - segment.trimStart().length;
+
+            if (trimmedEnd === "") {
+                pending += segment;
+            } else {
+                const lead = segment.slice(0, leadLength);
+                tokens.push({
+                    type: tokenType.TEXT,
+                    line: line + countNewlines(lead),
+                    leading: pending + lead,
+                    text: trimmedEnd.slice(leadLength),
+                });
+                pending = segment.slice(trimmedEnd.length);
+            }
+            line += countNewlines(segment);
+        }
+
+        if (tagStart === -1) break;
+
+        const tagEnd = findTagEnd(src, tagStart);
+        if (tagEnd === -1) throw new Error(`Nedokončený tag na řádku ${line}`);
+
+        const raw = src.slice(tagStart, tagEnd + 1);
+        const [name, attrs] = extractTag(raw);
+
+        let type = tokenType.OPEN;
+        if (raw.startsWith("</")) type = tokenType.CLOSE;
+        else if (raw.startsWith("<!")) type = tokenType.DECLARATION;
+
+        tokens.push({ type, line, leading: pending, name, attrs });
+        pending = "";
+
+        line += countNewlines(raw);
+        pos = tagEnd + 1;
+
+        if (type === tokenType.OPEN && RAW_TEXT_TAGS.has(name) && !raw.endsWith("/>")) {
+            const closeRe = new RegExp(`</${name}`, "ig");
+            closeRe.lastIndex = pos;
+            const closeMatch = closeRe.exec(src);
+            const rawEnd = closeMatch ? closeMatch.index : src.length;
+            const rawText = src.slice(pos, rawEnd);
+
+            if (rawText !== "") {
+                tokens.push({ type: tokenType.TEXT, line, leading: "", text: rawText });
+                line += countNewlines(rawText);
+                pos = rawEnd;
+            }
+        }
+    }
+
+    return tokens;
+}
+
+export function transpileKZTL(sourceCode) {
+    return buildHtml(tokenizeSource(sourceCode));
 }
